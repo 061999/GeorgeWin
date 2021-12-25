@@ -1,5 +1,9 @@
 #include "GameWindow.h"
 #include <sstream>
+#include "Buffer.h"
+#include "InputLayout.h"
+#include "LoadModel.h"
+#include "Shader.h"
 
 GameWindow* LPAPP=nullptr;
 
@@ -25,6 +29,10 @@ bool GameWindow::Init()
 	{
 		return false;
 	}
+	if (!InitWorld())
+	{
+		return false;
+	}
 	return true;
 }
 
@@ -46,7 +54,9 @@ int GameWindow::Run()
 		else
 		{
 			mTimer.Tick();
+			ClearScene(0.5f, 0.6f, 0.7f);
 			RenderScene();
+			EndRender();
 			setFPS();
 		}
 	}
@@ -126,6 +136,28 @@ bool GameWindow::InitDirectX()
 	return true;
 }
 
+bool GameWindow::InitWorld()
+{
+	LoadModel* model = new LoadModel("ฤýนโ.b");
+	Buffer* buffer = new Buffer(pDevice, pContext);
+	buffer->BindModelData(model);
+	Shader* s = new Shader(L"VertexShader.cso", L"PixelShader.cso", pDevice);
+	s->SetAllShader(pContext);
+	InputLayout input(pDevice,pContext,s);
+	pContext->OMSetRenderTargets(1u, &pTarget, nullptr);
+	pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	D3D11_VIEWPORT vp;
+	vp.Width = 640;
+	vp.Height = 480;
+	vp.MinDepth = 0;
+	vp.MaxDepth = 1;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+	pContext->RSSetViewports(1u, &vp);
+	return true;
+}
+
 
 void GameWindow::setFPS()
 {
@@ -154,8 +186,7 @@ void GameWindow::setFPS()
 
 void GameWindow::RenderScene()
 {
-	ClearScene(0.5f,0.6f,0.7f);
-	EndRender();
+	pContext->DrawIndexed(999999, 0, 0);
 }
 
 void GameWindow::EndRender()

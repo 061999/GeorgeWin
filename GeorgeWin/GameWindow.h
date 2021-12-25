@@ -13,6 +13,7 @@ public:
 private:
 	bool InitWindow();
 	bool InitDirectX();
+	bool InitWorld();
 	void setFPS();
 private:
 	void RenderScene();
@@ -25,8 +26,8 @@ private:
 	HWND	  gamehWnd;
 private:
 	ID3D11Device* pDevice = nullptr;
-	IDXGISwapChain* pSwap = nullptr;
 	ID3D11DeviceContext* pContext = nullptr;
+	IDXGISwapChain* pSwap = nullptr;
 	ID3D11RenderTargetView* pTarget = nullptr;
 };
 
