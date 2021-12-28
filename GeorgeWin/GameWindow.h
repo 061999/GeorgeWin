@@ -13,6 +13,7 @@ public:
 private:
 	bool InitWindow();
 	bool InitDirectX();
+	bool InitImgui();
 	bool InitWorld();
 	void setFPS();
 private:

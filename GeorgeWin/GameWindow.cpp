@@ -4,11 +4,20 @@
 #include "InputLayout.h"
 #include "LoadModel.h"
 #include "Shader.h"
+#include "resource.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_dx11.h"
+#include "imgui/imgui_impl_win32.h"
 
 GameWindow* LPAPP=nullptr;
 
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+		return true;
 	return LPAPP->MsgProc(hwnd, msg, wParam, lParam);
 }
 
@@ -26,6 +35,10 @@ bool GameWindow::Init()
 		return false;
 	}
 	if (!InitDirectX())
+	{
+		return false;
+	}
+	if (!InitImgui())
 	{
 		return false;
 	}
@@ -62,10 +75,11 @@ int GameWindow::Run()
 	}
 
 	return (int)msg.wParam;
-}
+}  
 
 LRESULT GameWindow::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+
 	if (msg==WM_CLOSE)
 	{
 		PostQuitMessage(0);
@@ -82,11 +96,11 @@ bool GameWindow::InitWindow()
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = gamehInst;
-	wc.hCursor = nullptr;
-	wc.hIcon = nullptr;
+	wc.hCursor = LoadCursor(gamehInst,(LPCWSTR)IDC_CURSOR1);
+	wc.hIcon = LoadIcon(gamehInst,(LPCWSTR)IDI_ICON2);
+	wc.hIconSm = LoadIcon(gamehInst, (LPCWSTR)IDI_ICON2);
 	wc.hbrBackground = nullptr;
 	wc.lpszClassName = gameClassName;
-	wc.hIconSm = nullptr;
 	RegisterClassEx(&wc);
 
 	gamehWnd = CreateWindowEx(0, gameClassName, L"Happy Hard Window", WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, 200, 200, 640, 480, nullptr, nullptr, gamehInst, nullptr);
@@ -136,9 +150,23 @@ bool GameWindow::InitDirectX()
 	return true;
 }
 
+bool GameWindow::InitImgui()
+{
+	ImGui::CreateContext();
+	if (!ImGui_ImplWin32_Init(gamehWnd))
+	{
+		return false;
+	}
+	if (!ImGui_ImplDX11_Init(pDevice,pContext))
+	{
+		return false;
+	}
+	return true;
+}
+
 bool GameWindow::InitWorld()
 {
-	LoadModel* model = new LoadModel("ฤýนโ.b");
+	LoadModel* model = new LoadModel("บ๚ฬา.b");
 	Buffer* buffer = new Buffer(pDevice, pContext);
 	buffer->BindModelData(model);
 	Shader* s = new Shader(L"VertexShader.cso", L"PixelShader.cso", pDevice);
@@ -183,10 +211,16 @@ void GameWindow::setFPS()
 		timeElapsed += 1.0f;
 	}
 }
-
+bool b = true;
 void GameWindow::RenderScene()
 {
 	pContext->DrawIndexed(999999, 0, 0);
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+	ImGui::ShowDemoWindow(&b);
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
 void GameWindow::EndRender()
